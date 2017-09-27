@@ -37,11 +37,29 @@ io.on('connection', function(socket) {
     // user sending new info
     socket.on('addMessage', function(data) {
         // conding there ...
+        if(data.to) {
+            // to @ user
+            connectedSockets[data.to].emit('messageAdded', data)
+        }else {
+            // broadcast message
+            socket.broadcast.emit('messageAdded', data)
+        }
     })
 
     // user quit chat
     socket.on('disconnect', function() {
         // conding there ...
+        // broadcast when user quit
+        socket.broadcast.emit('userRemoved', {
+            nickname: socket.nickname
+        })
+        for(var i = 0; i < allUsers.length; i++) {
+            if(allUsers[i].nickname == socket.nickname) {
+                allUsers.splice(i, 1)
+            }
+        }
+        // delete socket
+        delete connectedSockets[socket.nickname]
     })
 })
 
